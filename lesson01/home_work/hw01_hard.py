@@ -15,8 +15,6 @@ __author__ = 'Dmitry V. Vasilyev'
 # Вопрос: Чему была равна переменная a,
 # если точно известно, что её значение не изменялось?
 
-# Let's define a simple function of a quadratic equation
-
 # We will use unbounded upper value for this exercise
 a = float("inf")
 
