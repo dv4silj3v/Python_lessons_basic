@@ -5,6 +5,21 @@ equation = 'y = -12x + 11111140.2121'
 x = 2.5
 # вычислите и выведите y
 
+def equat_solution (equation, x):
+    # let's split our string into small pieces
+    elems = []
+    for i in equation.split(' '):
+        elems.append(i)
+    # finding k and b coefficients
+    k = float(elems[2][:-1])
+    b = float(elems[4])
+
+    print("k is:", k, " b is:",b)
+
+    y = k * x + b
+    print("y = ", y)
+
+equat_solution(equation, x)
 
 # Задание-2: Дата задана в виде строки формата 'dd.mm.yyyy'.
 # Проверить, корректно ли введена дата.
