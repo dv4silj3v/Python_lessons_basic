@@ -5,7 +5,7 @@ equation = 'y = -12x + 11111140.2121'
 x = 2.5
 # вычислите и выведите y
 
-def equat_solution (equation, x):
+def equat_solution(equation, x):
     # let's split our string into small pieces
     elems = []
     for i in equation.split(' '):
@@ -39,6 +39,36 @@ date = '01.22.1001'
 date = '1.12.1001'
 date = '-2.10.3001'
 
+def month_validate(month):
+    return 0 < month <= 12
+
+def day_validate(day, month):
+    months_list_l = [1, 3, 5, 7, 8, 10, 12] #31 day (long) months
+    months_list_s = [2, 4, 6, 9, 11] #30 day (short) months
+
+    if month in months_list_l:
+        if day >= 1 and day <= 31:
+            return True
+        else:
+            return False
+
+    if month in months_list_s:
+        if day >= 1 and day <= 30:
+            return True
+        else:
+            return False
+
+def year_validate(year):
+    return 1 < year <= 9999
+
+
+today = input("Please insert a date in format DD.MM.YYYY: ")
+todayslist = list(map(int, today.split('.')))
+
+if month_validate(int(todayslist[1])) and day_validate(int(todayslist[0]),int(todayslist[1])) and year_validate(int(todayslist[2])):
+    print("Date is valid")
+else:
+    print("Date is incorrect")
 
 # Задание-3: "Перевёрнутая башня" (Задача олимпиадного уровня)
 #
@@ -69,3 +99,27 @@ date = '-2.10.3001'
 #
 # Вход: 11
 # Выход: 5 3
+
+# Defining a function that finds a room in the cube of floors
+def get_room_cube(N):
+
+    largest_room_of_cube = 0
+    cube = 1
+    highest_floor_of_cube = 0
+
+# Let's find for a virtual cube of rooms and cube size
+    while largest_room_of_cube < N:
+        largest_room_of_cube = largest_room_of_cube + cube**2
+        highest_floor_of_cube = highest_floor_of_cube + cube
+        cube += 1
+    cube = cube - 1
+
+# Then we do a simple math calculations to find a room within a cube
+    lowerest_floor_of_cube = highest_floor_of_cube - cube + 1
+    smallest_room_of_cube = largest_room_of_cube - cube**2 + 1
+    room_floor = lowerest_floor_of_cube + ((N - smallest_room_of_cube) // cube)
+    room_position = (N - smallest_room_of_cube) % cube + 1
+
+    print("Room is located on {} floor, it is {} from left ".format(room_floor, room_position))
+
+get_room_cube(int(input("Please enter the room number: ")))
