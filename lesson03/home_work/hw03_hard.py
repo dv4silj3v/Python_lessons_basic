@@ -98,7 +98,7 @@ with open(os.path.join(DIR, 'hours_of'), 'r', encoding='UTF-8') as f:
 
 for j in hours_out:
     for i in statement:
-        if j["Surname:"] == i["Surname:"]:
+        if j["Surname:"] == i["Surname:"] and j["Name:"] == i["Name:"]:
             if int(i["HPM:"]) >= int(j["HW:"]):
                 salary = int(i["Salary:"]) * int(j["HW:"]) / int(i["HPM:"])
                 payroll.append({"Name:":j["Name:"], "Surname:":j["Surname:"], "Salary:":salary})
