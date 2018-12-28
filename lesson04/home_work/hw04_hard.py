@@ -79,14 +79,26 @@ def input_queen():
 
     while len(queen_pos) < 8:
         queen_pos_lst = [int(x) for x in input("Enter the queen position: ").split()]
-        if len(queen_pos_lst) == 2 and 1 <= queen_pos_lst[0] <= 8 and 1 <= queen_pos_lst[1] <= 8 and queen_pos_lst not in queen_pos:
+        if len(queen_pos_lst) == 2 and \
+                1 <= queen_pos_lst[0] <= 8 and \
+                1 <= queen_pos_lst[1] <= 8 and \
+                queen_pos_lst not in queen_pos:
             queen_pos.insert(i, queen_pos_lst)
             print(queen_pos)
         else:
             print("Incorrect position or position is already in use, number must be between 1 and 8, e.g. 2 5")
+    return queen_pos
 
-#def main_queen():
-#    input_queen()
-#   cross_queen()
+def queen_cross(queen_pos):
 
-input_queen()
+# Let's start with checking if any of the queens is in the same row/column:
+    list_index_0 = [item[0] for item in queen_pos]
+    list_index_1 = [item[1] for item in queen_pos]
+    print(list_index_0, list_index_1)
+    if len(list_index_0) > len(set(list_index_0)) or len(list_index_1) > len(set(list_index_1)):
+        print("YES")
+    for i, line in enumerate(queen_pos):
+        for j, el in enumerate(line):
+            print(i, j)
+
+queen_cross(input_queen())
