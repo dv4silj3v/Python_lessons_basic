@@ -23,9 +23,9 @@ line = 'mtMmEZUOmcqWiryMQhhTxqKdSTKCYEJlEZCsGAMkgAYEOmHBSQsSUHKvSfbmxULaysmNO'\
        'zTYwZAiRwycdlHfyHNGmkNqSwXUrxGc'
 
 # First option:
-pattern1 = '[a-z]*'
+pattern1 = '[a-z/d]+'
 
-print(list(filter(None, re.findall(pattern1, line))))
+print(re.findall(pattern1,line))
 
 # Second option:
 line_lst = list(filter(None, line))
@@ -65,8 +65,18 @@ line_2 = 'mtMmEZUOmcqWiryMQhhTxqKdSTKCYEJlEZCsGAMkgAYEOmHBSQsSUHKvSfbmxULaysm'\
        'JFaXiUWgsKQrDOeZoNlZNRvHnLgCmysUeKnVJXPFIzvdDyleXylnKBfLCjLHntltignbQ'\
        'oiQzTYwZAiRwycdlHfyHNGmkNqSwXUrxGC'
 
-pattern2 = '[A-Z]{3}'
-print(re.findall(pattern2,line_2))
+# First option:
+
+pattern2 = '(?<=[a-z]{2})[A-Z\d]+(?=[A-Z]{2})'
+
+line_2_lst = re.findall(pattern2, line_2)
+
+print(line_2_lst)
+
+# Second option:
+
+
+
 
 # Задание-3:
 # Напишите скрипт, заполняющий указанный файл (самостоятельно задайте имя файла)
