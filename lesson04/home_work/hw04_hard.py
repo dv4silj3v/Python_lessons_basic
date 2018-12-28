@@ -12,6 +12,11 @@ matrix = [[1, 0, 8],
 #                  [8, 1, 2]]
 
 # Суть сложности hard: Решите задачу в одну строку
+# First option:
+print("matrix_rotate = ", list(map(list, zip(*matrix))))
+
+# Second option:
+print("matrix_rotate = ", [[matrix[i][j] for i, el in enumerate(line)] for j, line in enumerate(matrix)])
 
 # Задание-2:
 # Найдите наибольшее произведение пяти последовательных цифр в 1000-значном числе.
@@ -39,6 +44,26 @@ number = """
 05886116467109405077541002256983155200055935729725
 71636269561882670428252483600823257530420752963450"""
 
+import re
+
+num_lst = re.findall('\d', number)
+i = len(num_lst)
+
+mlpl_tmp = 1
+mlpl = 1 # max multiplication
+z = 1 # last index of the numbers
+mlpl_lst = ''
+
+while i > 4:
+    for j in range(i-5, i):
+        mlpl_tmp *= int(num_lst[j])
+    if mlpl_tmp > mlpl:
+        mlpl = mlpl_tmp
+        z = i
+    mlpl_tmp = 1
+    i -= 1
+print("Multiplication equals to: {}; index of the first digit is {}".format(mlpl, z-5))
+
 
 # Задание-3 (Ферзи):
 # Известно, что на доске 8×8 можно расставить 8 ферзей так, чтобы они не били
@@ -47,3 +72,21 @@ number = """
 # Программа получает на вход восемь пар чисел,
 # каждое число от 1 до 8 — координаты 8 ферзей.
 # Если ферзи не бьют друг друга, выведите слово NO, иначе выведите YES.
+
+def input_queen():
+
+    queen_pos = []
+
+    while len(queen_pos) < 8:
+        queen_pos_lst = [int(x) for x in input("Enter the queen position: ").split()]
+        if len(queen_pos_lst) == 2 and 1 <= queen_pos_lst[0] <= 8 and 1 <= queen_pos_lst[1] <= 8 and queen_pos_lst not in queen_pos:
+            queen_pos.insert(i, queen_pos_lst)
+            print(queen_pos)
+        else:
+            print("Incorrect position or position is already in use, number must be between 1 and 8, e.g. 2 5")
+
+#def main_queen():
+#    input_queen()
+#   cross_queen()
+
+input_queen()
