@@ -1,8 +1,6 @@
 import os
 
 
-
-
 def ch_dir(dir_name):
     dir_path = os.path.join(os.getcwd(), dir_name)
     if os.path.isdir(dir_path):
