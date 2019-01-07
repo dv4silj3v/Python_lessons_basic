@@ -40,6 +40,6 @@ file_name = os.path.basename(__file__)
 copy_name = file_name[:-3] + "_copy.py"
 
 try:
-    shutil.copy(os.path.join(os.getcwd(),file_name), os.path.join(os.getcwd(), copy_name))
+    shutil.copy(os.path.join(os.getcwd(), file_name), os.path.join(os.getcwd(), copy_name))
 except FileExistsError:
     print('Copy already exists')
