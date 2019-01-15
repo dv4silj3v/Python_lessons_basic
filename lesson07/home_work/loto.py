@@ -57,3 +57,33 @@
 модуль random: http://docs.python.org/3/library/random.html
 
 """
+import random
+
+
+class Cards:
+    def __init__(self, rows, columns, maxnum):
+        self.rows = rows
+        self.columns = columns
+        self.maxnum = maxnum
+
+    def cardgen(self, rows, columns, maxnum):
+        numlist = [sorted([random.randint(1, maxnum) for x in range(columns)]) for y in range(rows)]
+        return numlist
+
+
+user_card = Cards(3, 9, 90)
+print(user_card)
+cpu_card = Cards(3, 9, 90)
+
+print('-------Your Card---------')
+print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in user_card]))
+print('-------------------------')
+print('-------Computer Card-----')
+print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in cpu_card]))
+print('-------------------------')
+
+
+
+
+
+
