@@ -61,26 +61,122 @@ import random
 
 
 class Cards:
-    def __init__(self, rows, columns, maxnum):
-        self.rows = rows
-        self.columns = columns
-        self.maxnum = maxnum
+    # Define our card
+    def __init__(self):
+        self.card = [[], [], []]
 
-    def cardgen(self, rows, columns, maxnum):
-        numlist = [sorted([random.randint(1, maxnum) for x in range(columns)]) for y in range(rows)]
-        return numlist
+    def num_gen(self):
+        # Generate matrix of numbers and sort each row
+        self.card = [sorted([random.randint(1, 90) for x in range(9)]) for y in range(3)]
+
+        # Popup four random numbers in each row
+        for i, row in enumerate(self.card):
+            randlist = []
+            popnum = 4
+            while popnum > 0:
+                rannum = random.randint(0, 8)
+                if rannum not in randlist:
+                    randlist.append(rannum)
+                    popnum -= 1
+            for j, elem in enumerate(row):
+                if j in randlist:
+                    self.card[i][j] = str(" ")
+        return self.card
+
+    # Make a good looking output
+    def __str__(self):
+        return '\n'.join('{}'.format(row) for row in self.card)
+
+    # Checking if number is on the card
+    def num_check(self, number):
+        for i, row in enumerate(self.card):
+            for j, elem in enumerate(row):
+                if number == elem:
+                    return True
+        return False
+
+    # Crossing the number on the card
+    def cross_num(self, number):
+        for i, row in enumerate(self.card):
+            for j, elem in enumerate(row):
+                if number == elem:
+                    self.card[i][j] = str(" ")
+                    return True
+        return False
+
+    # Checking if the card has any numbers left
+    def card_check(self):
+        return len([column for row in self.card for column in row if type(column) == int]) > 0
 
 
-user_card = Cards(3, 9, 90)
-print(user_card)
-cpu_card = Cards(3, 9, 90)
+class LottoGame:
+    def __init__(self, player_card, cpu_card):
+        self.player_card = player_card
+        self.cpu_card = cpu_card
+        self.barrels = []
 
-print('-------Your Card---------')
-print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in user_card]))
-print('-------------------------')
-print('-------Computer Card-----')
-print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in cpu_card]))
-print('-------------------------')
+    def _show_stat(self, i, barrel):
+        print("New Barrel: {}. Barrels left: {}".format(barrel, len(self.barrels) - i - 1))
+        print("------ Player Card -------")
+        print(self.player_card)
+        print("--------------------------")
+        print("------ CPU Card ----------")
+        print(self.cpu_card)
+        print("--------------------------")
+
+    def _player_turn(self, barrel):
+        while True:
+            answer = input("Cross the number? (Y/N)")
+            if answer == 'Y':
+                if not self.player_card.cross_num(barrel):
+                    print("Number is not on card. You lost..")
+                    exit()
+                break
+            elif answer == 'N':
+                if self.player_card.cross_num(barrel):
+                    print("Number is on the card. You lost..")
+                    exit()
+                break
+            elif answer == 'q':
+                exit()
+
+    def _cpu_turn(self, barrel):
+        if self.cpu_card.num_check(barrel):
+            print("CPU crossed number {}".format(barrel))
+            self.cpu_card.cross_num(barrel)
+        else:
+            print("CPU didn't cross number: {}".format(barrel))
+
+    def _check_victory_conditions(self):
+        if not self.player_card.card_check() and not self.cpu_card.card_check():
+            print("It's a DRAW!")
+            return True
+        elif not self.player_card.card_check():
+            print("You Lost!")
+            return True
+        elif not self.cpu_card.card_check():
+            print("You won!")
+            return True
+        return False
+
+    def start_game(self):
+        self.barrels = random.sample(range(1, 91), 90)
+        print("Welcome to the Lotto Game!!")
+        for i, barrel in enumerate(self.barrels):
+            self._show_stat(i, barrel)
+            self._player_turn(barrel)
+            self._cpu_turn(barrel)
+            if self._check_victory_conditions():
+                return
+
+
+player_card = Cards()
+player_card.num_gen()
+cpu_card = Cards()
+cpu_card.num_gen()
+
+lotto = LottoGame(player_card, cpu_card)
+lotto.start_game()
 
 
 
