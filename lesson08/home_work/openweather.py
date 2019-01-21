@@ -122,4 +122,108 @@ OpenWeatherMap — онлайн-сервис, который предостав�
         ...
 
 """
+import os
+import wget
+import json
+import sqlite3
+import datetime
+import pytemperature
+
+
+class Builder:
+    def __init__(self, article):
+        for a, b in article.items():
+            setattr(self, a, b)
+
+
+class WeatherForecast:
+    def __init__(self, city):
+        self.city = city
+
+    # Read the APP ID from the file
+    def appid(self):
+        with open('app.id', 'r', encoding='UTF-8') as f:
+            return f.readlines()[1]
+
+    # Find the city ID from the file
+    def findcityid(self):
+        with open('city.list.json', 'r') as f:
+            citylist = json.load(f)
+            cityid = 0
+            for i in citylist:
+                if i['name'] == self.city:
+                    cityid = i['id']
+            if cityid != 0:
+                return cityid
+            else:
+                print("City doesn't exist in database")
+
+    # Pull information from website using 'wget'
+    def gethttpdata(self):
+        url = 'http://api.openweathermap.org/data/2.5/weather?id=' + str(self.findcityid()) + '&APPID=' + str(self.appid())
+        output = 'data/' + self.city + '.json'
+        filename = wget.download(url, output)
+        return filename
+
+    # Parse the file and return only id, name, forecast_id, date and temperature
+    def openforecast(self):
+        with open(self.gethttpdata(), 'r', encoding='UTF-8') as f:
+            fc_in = json.load(f)
+            fc_out = Builder(fc_in)
+        return fc_out
+
+    # Create new database and dump data
+    def dumptosqldb(self):
+        forecast_db = 'forecast.db'
+        conn = sqlite3.connect(forecast_db)
+        conn.close()
+        os.remove(forecast_db)
+
+        with sqlite3.connect(forecast_db) as conn:
+            conn.execute("""
+                create table forecast (
+                    id          integer PRIMARY KEY,
+                    name        text,
+                    date        date,
+                    temperature float,
+                    weather_id  integer
+                );
+                """)
+            conn.execute("""
+                insert into forecast (id, name, date, temperature, weather_id) VALUES (?,?,?,?,?)""", (
+                self.openforecast().id,
+                self.openforecast().name,
+                datetime.datetime.utcfromtimestamp(int(self.openforecast().dt)).strftime('%Y-%m-%d %H:%M:%S'),
+                pytemperature.k2c(self.openforecast().main["temp"]),
+                self.openforecast().weather[0]["id"]
+                )
+            )
+
+    # Read forecast from database and print output
+    def readfromsqldb(self):
+
+        forecast_db = 'forecast.db'
+        self.dumptosqldb()
+
+        with sqlite3.connect(forecast_db) as conn:
+            conn.row_factory = sqlite3.Row
+
+            cur = conn.cursor()
+            cur.execute("select * from forecast")
+            for row in cur.fetchall():
+                print(row)
+                id, name, date, temperature, weather_id = row
+                return id, name, date, temperature, weather_id
+
+    def __str__(self):
+        return "City ID: %s, City Name: %s, Date and Time: %s, Temperature: %s, Weather ID: %s" % (self.readfromsqldb())
+
+
+print(WeatherForecast(input("Please enter the city name to get Weather Conditions: ")))
+
+
+
+
+
+
 
