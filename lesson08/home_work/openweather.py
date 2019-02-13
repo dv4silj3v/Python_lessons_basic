@@ -127,6 +127,8 @@ import wget
 import json
 import sqlite3
 import datetime
+import re
+import pycountry_convert
 
 
 class Builder:
@@ -135,8 +137,9 @@ class Builder:
             setattr(self, a, b)
 
 
-class WeatherForecast:
-    def __init__(self, city):
+class GetCityForecast:
+    def __init__(self, country, city):
+        self.country = country
         self.city = city
         with open('app.id', 'r', encoding='UTF-8') as f:
             self._appid = f.readlines()[1]
@@ -146,39 +149,45 @@ class WeatherForecast:
         with open('city.list.json', 'r') as f:
             citylist = json.load(f)
             cityid = 0
-            for i in citylist:
-                if i['name'] == self.city:
-                    cityid = i['id']
+            for j in citylist:
+                if j['country'] == self.country and j['name'] == self.city:
+                    cityid = j['id']
             if cityid != 0:
                 return cityid
             else:
-                print("City doesn't exist in database")
+                print("City or country doesn't exist in database")
+                exit(1)
 
-    def _gethttpdata(self):
-        """Pull information from website using 'wget'"""
-        url = 'http://api.openweathermap.org/data/2.5/weather?id=' + str(self._findcityid()) + '&&units=metric&APPID=' + str(self._appid)
-        output = 'data/' + self.city + '.json'
-        filename = wget.download(url, output)
-        return filename
+    def gethttpdata(self):
+        """Pull information into file from website using 'wget'"""
+        url = 'http://api.openweathermap.org/data/2.5/weather?id=' + str(
+            self._findcityid()) + '&&units=metric&APPID=' + str(self._appid)
+        outputfile = 'data/' + self.city + '.json'
+        if os.path.exists(outputfile):
+            os.remove(outputfile)
+        try:
+            wget.download(url, outputfile)
+        except:
+            print("Couldn't download file. Exiting")
+            exit(1)
 
-    def _openforecast(self):
-        """Parse the file and return only id, name, forecast_id, date and temperature"""
-        with open(self._gethttpdata(), 'r', encoding='UTF-8') as f:
-            fc_in = json.load(f)
-            fc_out = Builder(fc_in)
-        return fc_out
+    def _parsehttpdata(self):
+        with open(os.path.join('data/', self.city + '.json'), 'r', encoding='UTF-8') as f:
+            httpdatain = json.load(f)
+            httpdataout = Builder(httpdatain)
+        return httpdataout
 
-    def _dumptosqldb(self):
+    def dumptosqldb(self):
         """Create new database and dump data"""
         forecast_db = 'forecast.db'
         conn = sqlite3.connect(forecast_db)
         conn.close()
 
-        os.remove(forecast_db)
         with sqlite3.connect(forecast_db) as conn:
             conn.execute("""
                 create table IF NOT EXISTS forecast (
                     id          integer PRIMARY KEY,
+                    country     text,
                     name        text,
                     date        date,
                     temperature float,
@@ -186,34 +195,42 @@ class WeatherForecast:
                 );
                 """)
             conn.execute("""
-                insert into forecast (id, name, date, temperature, weather_id) VALUES (?,?,?,?,?)""", (
-                self._openforecast().id,
-                self._openforecast().name,
-                datetime.datetime.utcfromtimestamp(int(self._openforecast().dt)).strftime('%Y-%m-%d %H:%M:%S'),
-                self._openforecast().main["temp"],
-                self._openforecast().weather[0]["id"]
+                insert or replace into forecast (id, country, name, 
+                date, temperature, weather_id) VALUES (?,?,?,?,?,?)""", (
+                self._parsehttpdata().id,
+                self._parsehttpdata().sys["country"],
+                self._parsehttpdata().name,
+                datetime.datetime.utcfromtimestamp(int(self._parsehttpdata().dt)).strftime('%Y-%m-%d %H:%M:%S'),
+                self._parsehttpdata().main["temp"],
+                self._parsehttpdata().weather[0]["id"]
                 )
             )
 
-    def _readfromsqldb(self):
+    def readfromsqldb(self):
         """Read forecast from database and print output"""
         forecast_db = 'forecast.db'
-        self._dumptosqldb()
 
         with sqlite3.connect(forecast_db) as conn:
             conn.row_factory = sqlite3.Row
             cur = conn.cursor()
-            cur.execute("select * from forecast")
+            cur.execute("select * from forecast where id={}".format(self._parsehttpdata().id))
             for row in cur.fetchall():
-                print(row)
-                id, name, date, temperature, weather_id = row
-                return id, name, date, temperature, weather_id
+                id, country, name, date, temperature, weather_id = row
+                return id, country, name, date, temperature, weather_id
 
     def __str__(self):
-        return "City ID: %s, City Name: %s, Date and Time: %s, Temperature: %s C, Weather ID: %s" % (self._readfromsqldb())
+        self.gethttpdata()
+        self.dumptosqldb()
+        return "City ID: %s, Country Code: %s, " \
+               "City Name: %s, Date and Time: %s, " \
+               "Temperature: %s C, Weather ID: %s" % (self.readfromsqldb())
 
 
-print(WeatherForecast(input("Please enter the city name to get Weather Conditions: ")))
+print(GetCityForecast(input("Please enter the country code: "),
+                      input("Please enter the city name to get Weather Conditions: ")))
+
+
+
 
 
 
